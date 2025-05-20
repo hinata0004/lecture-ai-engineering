@@ -176,6 +176,7 @@ def test_model_reproducibility(sample_data, preprocessor):
         predictions1, predictions2
     ), "モデルの予測結果に再現性がありません"
 
+
 def test_model_performance_degradation(sample_data):
     """旧モデルと新モデルの精度・推論時間を比較して劣化をチェック"""
     prev_model_path = os.path.join(MODEL_DIR, "prev_titanic_model.pkl")
