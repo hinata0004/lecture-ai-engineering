@@ -117,6 +117,8 @@ def test_model_accuracy(train_model):
     y_pred = model.predict(X_test)
     accuracy = accuracy_score(y_test, y_pred)
 
+    print(f"Accuracy: {accuracy:.4f}")
+
     # Titanicデータセットでは0.75以上の精度が一般的に良いとされる
     assert accuracy >= 0.75, f"モデルの精度が低すぎます: {accuracy}"
 
@@ -131,6 +133,8 @@ def test_model_inference_time(train_model):
     end_time = time.time()
 
     inference_time = end_time - start_time
+
+    print(f"Inference time: {inference_time:.4f}sec")
 
     # 推論時間が1秒未満であることを確認
     assert inference_time < 1.0, f"推論時間が長すぎます: {inference_time}秒"
@@ -171,3 +175,45 @@ def test_model_reproducibility(sample_data, preprocessor):
     assert np.array_equal(
         predictions1, predictions2
     ), "モデルの予測結果に再現性がありません"
+
+
+def test_model_performance_degradation(sample_data):
+    """旧モデルと新モデルの精度・推論時間を比較して劣化をチェック"""
+    prev_model_path = os.path.join(MODEL_DIR, "prev_titanic_model.pkl")
+    if not os.path.exists(prev_model_path):
+        pytest.skip("旧モデルファイルが存在しないためスキップします")
+
+    # データの分割
+    X = sample_data.drop("Survived", axis=1)
+    y = sample_data["Survived"].astype(int)
+
+    # 新モデルの読み込み
+    with open(MODEL_PATH, "rb") as f:
+        new_model = pickle.load(f)
+
+    # 旧モデルの読み込み
+    with open(prev_model_path, "rb") as f:
+        old_model = pickle.load(f)
+
+    # 新モデル
+    start_new = time.time()
+    pred_new = new_model.predict(X)
+    time_new = time.time() - start_new
+    accuracy_new = accuracy_score(y, pred_new)
+
+    # 旧モデル
+    start_old = time.time()
+    pred_old = old_model.predict(X)
+    time_old = time.time() - start_old
+    accuracy_old = accuracy_score(y, pred_old)
+
+    print(f"旧モデル： accuracy: {accuracy_old:.4f}, time: {time_old:.4f}sec")
+    print(f"新モデル： accuracy: {accuracy_new:.4f}, time: {time_new:.4f}sec")
+
+    # 精度の劣化をチェック
+    assert (
+        accuracy_new >= accuracy_old - 0.05
+    ), f"精度が劣化しています: {accuracy_new} < {accuracy_old - 0.05}"
+    assert (
+        time_new <= time_old + 0.5
+    ), f"推論時間が劣化しています: {time_new} > {time_old + 0.5}sec"
