@@ -181,7 +181,7 @@ def test_model_reproducibility(sample_data, preprocessor):
         prev_model_path = os.path.join(MODEL_DIR, "prev_titanic_model.pkl")
         if not os.path.exists(prev_model_path):
             pytest.skip("旧モデルファイルが存在しないためスキップします")
-        
+
         # データの分割
         X = sample_data.drop("Survived", axis=1)
         y = sample_data["Survived"].astype(int)
@@ -189,7 +189,7 @@ def test_model_reproducibility(sample_data, preprocessor):
         # 新モデルの読み込み
         with open(MODEL_PATH, "rb") as f:
             new_model = pickle.load(f)
-        
+
         # 旧モデルの読み込み
         with open(prev_model_path, "rb") as f:
             old_model = pickle.load(f)
@@ -210,5 +210,9 @@ def test_model_reproducibility(sample_data, preprocessor):
         print(f"新モデル： accuracy: {accuracy_new:.4f}, time: {time_new:.4f}sec")
 
         # 精度の劣化をチェック
-        assert accuracy_new >= accuracy_old - 0.05, f"精度が劣化しています: {accuracy_new} < {accuracy_old - 0.05}"
-        assert time_new <= time_old + 0.5, f"推論時間が劣化しています: {time_new} > {time_old + 0.5}sec"
+        assert (
+            accuracy_new >= accuracy_old - 0.05
+        ), f"精度が劣化しています: {accuracy_new} < {accuracy_old - 0.05}"
+        assert (
+            time_new <= time_old + 0.5
+        ), f"推論時間が劣化しています: {time_new} > {time_old + 0.5}sec"
