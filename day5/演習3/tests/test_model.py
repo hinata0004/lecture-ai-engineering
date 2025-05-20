@@ -176,43 +176,43 @@ def test_model_reproducibility(sample_data, preprocessor):
         predictions1, predictions2
     ), "モデルの予測結果に再現性がありません"
 
-    def test_model_performance_degradation(sample_data):
-        """旧モデルと新モデルの精度・推論時間を比較して劣化をチェック"""
-        prev_model_path = os.path.join(MODEL_DIR, "prev_titanic_model.pkl")
-        if not os.path.exists(prev_model_path):
-            pytest.skip("旧モデルファイルが存在しないためスキップします")
+def test_model_performance_degradation(sample_data):
+    """旧モデルと新モデルの精度・推論時間を比較して劣化をチェック"""
+    prev_model_path = os.path.join(MODEL_DIR, "prev_titanic_model.pkl")
+    if not os.path.exists(prev_model_path):
+        pytest.skip("旧モデルファイルが存在しないためスキップします")
 
-        # データの分割
-        X = sample_data.drop("Survived", axis=1)
-        y = sample_data["Survived"].astype(int)
+    # データの分割
+    X = sample_data.drop("Survived", axis=1)
+    y = sample_data["Survived"].astype(int)
 
-        # 新モデルの読み込み
-        with open(MODEL_PATH, "rb") as f:
-            new_model = pickle.load(f)
+    # 新モデルの読み込み
+    with open(MODEL_PATH, "rb") as f:
+        new_model = pickle.load(f)
 
-        # 旧モデルの読み込み
-        with open(prev_model_path, "rb") as f:
-            old_model = pickle.load(f)
+    # 旧モデルの読み込み
+    with open(prev_model_path, "rb") as f:
+        old_model = pickle.load(f)
 
-        # 新モデル
-        start_new = time.time()
-        pred_new = new_model.predict(X)
-        time_new = time.time() - start_new
-        accuracy_new = accuracy_score(y, pred_new)
+    # 新モデル
+    start_new = time.time()
+    pred_new = new_model.predict(X)
+    time_new = time.time() - start_new
+    accuracy_new = accuracy_score(y, pred_new)
 
-        # 旧モデル
-        start_old = time.time()
-        pred_old = old_model.predict(X)
-        time_old = time.time() - start_old
-        accuracy_old = accuracy_score(y, pred_old)
+    # 旧モデル
+    start_old = time.time()
+    pred_old = old_model.predict(X)
+    time_old = time.time() - start_old
+    accuracy_old = accuracy_score(y, pred_old)
 
-        print(f"旧モデル： accuracy: {accuracy_old:.4f}, time: {time_old:.4f}sec")
-        print(f"新モデル： accuracy: {accuracy_new:.4f}, time: {time_new:.4f}sec")
+    print(f"旧モデル： accuracy: {accuracy_old:.4f}, time: {time_old:.4f}sec")
+    print(f"新モデル： accuracy: {accuracy_new:.4f}, time: {time_new:.4f}sec")
 
-        # 精度の劣化をチェック
-        assert (
-            accuracy_new >= accuracy_old - 0.05
-        ), f"精度が劣化しています: {accuracy_new} < {accuracy_old - 0.05}"
-        assert (
-            time_new <= time_old + 0.5
-        ), f"推論時間が劣化しています: {time_new} > {time_old + 0.5}sec"
+    # 精度の劣化をチェック
+    assert (
+        accuracy_new >= accuracy_old - 0.05
+    ), f"精度が劣化しています: {accuracy_new} < {accuracy_old - 0.05}"
+    assert (
+        time_new <= time_old + 0.5
+    ), f"推論時間が劣化しています: {time_new} > {time_old + 0.5}sec"
